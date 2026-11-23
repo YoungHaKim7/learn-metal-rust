@@ -1,0 +1,16 @@
+[package]
+name = "learn-metal-rust"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.100.0"
+publish = false
+description = "10 runnable Rust examples for the metal-rust crate (Apple Metal)."
+
+[workspace]
+members = ["examples/*"]
+
+[workspace.dependencies]
+metal-cpp-rs = { git = "https://github.com/YoungHaKim7/metal-cpp-rs"}
+
+
+
