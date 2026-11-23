@@ -1,8 +1,0 @@
-[package]
-name = "frame_debugging"
-version = "0.1.0"
-edition = "2024"
-
-
-[dependencies]
-metal-cpp-rs.workspace = true

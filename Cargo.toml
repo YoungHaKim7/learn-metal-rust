@@ -1,17 +1,50 @@
-[package]
-name = "learn-metal-rust"
-version = "0.1.0"
-description = "10 runnable Rust examples for the metal-rust crate (Apple Metal)."
+[workspace]
+resolver = "3"
+members = [
+    "00_window",
+    "01_primitive",
+    "02_argbuffers",
+    "03_animation",
+    "04_instancing",
+    "05_perspective",
+    "06_lighting",
+    "07_texturing",
+    "08_compute",
+    "09_compute_to_render",
+    "10_frame_debugging",
+]
+
+# Each sample is a standalone binary crate that depends on `metal-cpp-rs`
+# (a Rust conversion of Apple's metal-cpp, talking directly to the
+# Objective-C ABI with zero third-party dependencies).
+#
+# Run any sample from the workspace root:
+#     cargo run -p window          # 00 — clear to red
+#     cargo run -p primitive       # 01 — render a triangle
+#     cargo run -p argbuffers      # 02 — argument buffer
+#     cargo run -p animation       # 03 — spinning triangle
+#     cargo run -p instancing      # 04 — instanced draws
+#     cargo run -p perspective     # 05 — 3D projection
+#     cargo run -p lighting        # 06 — Lambert shading
+#     cargo run -p texturing       # 07 — textured quad
+#     cargo run -p compute         # 08 — compute kernel
+#     cargo run -p compute_to_render  # 09 — render kernel output
+#     cargo run -p frame_debugging # 10 — GPU capture
+#
+# IMPORTANT: these samples only compile and run on macOS because they use
+# Apple's Metal framework via the Objective-C runtime.
 
 [workspace.package]
 edition = "2024"
+license = "MIT OR Apache-2.0"
 rust-version = "1.100.0"
-publish = false
-
-[workspace]
-resolver = "3"
-members = ["examples/*", "shared"]
 
 [workspace.dependencies]
-metal-cpp-rs = { git = "https://github.com/YoungHaKim7/metal-cpp-rs"}
-shared = { path = "shared"}
+# metal-cpp-rs is hosted on GitHub, not crates.io. We pin to the main branch.
+# For reproducibility you can change this to a tag or commit SHA:
+#   metal-cpp-rs = { git = "https://github.com/YoungHaKim7/metal-cpp-rs", tag = "v0.1.0" }
+metal-cpp-rs = { git = "https://github.com/YoungHaKim7/metal-cpp-rs.git", branch = "main" }
+
+# The `shared/` crate holds the window + CAMetalLayer + event loop boilerplate
+# that every sample reuses. It's a library crate (no main).
+shared = { path = "shared" }

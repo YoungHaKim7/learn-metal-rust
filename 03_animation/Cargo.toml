@@ -1,0 +1,12 @@
+[package]
+name = "animation"
+version = "0.1.0"
+description = "Sample using metal-cpp-rs"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+metal-cpp-rs.workspace = true
+shared.workspace = true

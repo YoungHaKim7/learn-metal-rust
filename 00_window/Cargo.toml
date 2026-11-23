@@ -1,0 +1,14 @@
+[package]
+name = "window"
+version = "0.1.0"
+description = "00 — Create a Window for Metal Rendering (clears to red)"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+metal-cpp-rs.workspace = true
+shared.workspace = true
+
+# Run with:  cargo run -p window

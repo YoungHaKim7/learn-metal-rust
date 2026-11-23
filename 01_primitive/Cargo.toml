@@ -1,0 +1,14 @@
+[package]
+name = "primitive"
+version = "0.1.0"
+description = "01 — Render a Triangle (vertex + fragment shaders)"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+metal-cpp-rs.workspace = true
+shared.workspace = true
+
+# Run with:  cargo run -p primitive
