@@ -10,7 +10,7 @@ description = "10 runnable Rust examples for the metal-rust crate (Apple Metal).
 
 [workspace]
 resolver = "3"
-members = ["examples/*"]
+members = ["examples/*", "shared"]
 
 [workspace.dependencies]
 metal-cpp-rs = { git = "https://github.com/YoungHaKim7/metal-cpp-rs"}

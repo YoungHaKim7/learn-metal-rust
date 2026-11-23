@@ -17,3 +17,10 @@ version = "0.1.0"
 name = "metal-cpp-rs"
 version = "0.1.0"
 source = "git+https://github.com/YoungHaKim7/metal-cpp-rs#d3d56d99d03e72f79e5ac072c15185fed9dfa9e9"
+
+[[package]]
+name = "shared"
+version = "0.1.0"
+dependencies = [
+ "metal-cpp-rs",
+]
