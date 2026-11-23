@@ -1,14 +1,17 @@
 [package]
 name = "learn-metal-rust"
 version = "0.1.0"
+
+[workspace.package]
 edition = "2024"
 rust-version = "1.100.0"
 publish = false
 description = "10 runnable Rust examples for the metal-rust crate (Apple Metal)."
 
 [workspace]
+resolver = "3"
 members = ["examples/*"]
 
 [workspace.dependencies]
 metal-cpp-rs = { git = "https://github.com/YoungHaKim7/metal-cpp-rs"}
-shared = { path = "./learn-metal-rust"}
+shared = { path = "shared"}
