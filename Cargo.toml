@@ -11,6 +11,4 @@ members = ["examples/*"]
 
 [workspace.dependencies]
 metal-cpp-rs = { git = "https://github.com/YoungHaKim7/metal-cpp-rs"}
-
-
-
+shared = { path = "./learn-metal-rust"}
