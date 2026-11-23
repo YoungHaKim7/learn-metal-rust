@@ -14,14 +14,14 @@
 //! open frame_debugging.gputrace
 //! ```
 
-use metalcpprs::objc_abi::{Ref, Sel};
-use metalcpprs::prelude::*;
+use metal_cpp_rs::objc_abi::{Ref, Sel};
+use metal_cpp_rs::prelude::*;
 use shared::{
     App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPixelFormat, MTLPrimitiveType,
     MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
 };
 
-const SHADER_SOURCE: &str = include_str!("../../assets/frame_debugging.metal");
+const SHADER_SOURCE: &str = include_str!("../assets/frame_debugging.metal");
 
 #[repr(C)]
 #[derive(Copy, Clone)]
