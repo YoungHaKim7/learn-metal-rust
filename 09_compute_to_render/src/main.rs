@@ -9,13 +9,13 @@
 //!
 //! Run with: `cargo run -p compute_to_render`
 
-use shared::{
-    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPrimitiveType,
-    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions,
-    MTLStoreAction, MTLPixelFormat, MTLStorageMode, MTLTextureUsage, MTLTextureDescriptor,
-};
 use metal_cpp_rs::objc_abi::Ref;
 use metal_cpp_rs::prelude::*;
+use shared::{
+    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPixelFormat, MTLPrimitiveType,
+    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStorageMode,
+    MTLStoreAction, MTLTextureDescriptor, MTLTextureUsage,
+};
 
 const COMPUTE_SHADER: &str = r#"
 #include <metal_stdlib>
@@ -90,19 +90,34 @@ fn main() {
     let compute_pso = unsafe {
         device.newComputePipelineState(compute_fn.as_ref(), &mut Strong::<MTLError>::nil())
     };
-    if compute_pso.is_nil() { panic!("compute pipeline failed"); }
+    if compute_pso.is_nil() {
+        panic!("compute pipeline failed");
+    }
 
     // Render pipeline.
     let render_desc = MTLRenderPipelineDescriptor::new();
     unsafe {
-        render_desc.setVertexFunction(render_lib.newFunction(NSString::from_str("vs").as_ref()).as_ref());
-        render_desc.setFragmentFunction(render_lib.newFunction(NSString::from_str("fs").as_ref()).as_ref());
-        render_desc.colorAttachments().objectAtIndexedSubscript(0).setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
+        render_desc.setVertexFunction(
+            render_lib
+                .newFunction(NSString::from_str("vs").as_ref())
+                .as_ref(),
+        );
+        render_desc.setFragmentFunction(
+            render_lib
+                .newFunction(NSString::from_str("fs").as_ref())
+                .as_ref(),
+        );
+        render_desc
+            .colorAttachments()
+            .objectAtIndexedSubscript(0)
+            .setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
     }
     let render_pso = unsafe {
         device.newRenderPipelineState(render_desc.as_ref(), &mut Strong::<MTLError>::nil())
     };
-    if render_pso.is_nil() { panic!("render pipeline failed"); }
+    if render_pso.is_nil() {
+        panic!("render pipeline failed");
+    }
 
     // Shared texture: compute writes, render reads.
     let tex_desc = MTLTextureDescriptor::texture2DDescriptor(
@@ -111,7 +126,9 @@ fn main() {
         TEX_H,
         false,
     );
-    tex_desc.setUsage(MTLTextureUsage::TextureUsageShaderRead | MTLTextureUsage::TextureUsageShaderWrite);
+    tex_desc.setUsage(
+        MTLTextureUsage::TextureUsageShaderRead | MTLTextureUsage::TextureUsageShaderWrite,
+    );
     tex_desc.setStorageMode(MTLStorageMode::StorageModePrivate); // GPU-only for speed
     let texture = unsafe { device.newTexture(tex_desc.as_ref()) };
 
@@ -129,18 +146,29 @@ fn main() {
         comp_enc.setComputePipelineState(compute_pso.as_ref());
         comp_enc.setTexture(texture.as_ref(), 0);
         comp_enc.setBuffer(time_buf.as_ref(), 0, 0);
-        let grid = metal_cpp_rs::metal::types::MTLSize { width: TEX_W, height: TEX_H, depth: 1 };
-        let tg = metal_cpp_rs::metal::types::MTLSize { width: 16, height: 16, depth: 1 };
+        let grid = metal_cpp_rs::metal::types::MTLSize {
+            width: TEX_W,
+            height: TEX_H,
+            depth: 1,
+        };
+        let tg = metal_cpp_rs::metal::types::MTLSize {
+            width: 16,
+            height: 16,
+            depth: 1,
+        };
         comp_enc.dispatchThreads(grid, tg);
         comp_enc.endEncoding();
 
         // --- Render pass: draw the texture to the screen ---
-        let drawable_tex: Ref<MTLTexture> = msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
+        let drawable_tex: Ref<MTLTexture> =
+            msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
         let rp = MTLRenderPassDescriptor::renderPassDescriptor();
         let ca = rp.colorAttachments().objectAtIndexedSubscript(0);
         ca.as_attachment().setTexture(drawable_tex);
-        ca.as_attachment().setLoadAction(MTLLoadAction::LoadActionClear);
-        ca.as_attachment().setStoreAction(MTLStoreAction::StoreActionStore);
+        ca.as_attachment()
+            .setLoadAction(MTLLoadAction::LoadActionClear);
+        ca.as_attachment()
+            .setStoreAction(MTLStoreAction::StoreActionStore);
         ca.setClearColor(MTLClearColor::Make(0.0, 0.0, 0.0, 1.0));
 
         let rend_enc = cb.renderCommandEncoder(rp.as_ref());
@@ -151,7 +179,11 @@ fn main() {
         rend_enc.endEncoding();
 
         // Present + commit.
-        let _: () = msg_send!(cb, Sel::get("presentDrawable:\0").as_ptr().unwrap(), frame.drawable);
+        let _: () = msg_send!(
+            cb,
+            Sel::get("presentDrawable:\0").as_ptr().unwrap(),
+            frame.drawable
+        );
         cb.commit();
     });
 }

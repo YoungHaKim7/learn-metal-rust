@@ -5,13 +5,13 @@
 //!
 //! Run with: `cargo run -p texturing`
 
-use shared::{
-    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPrimitiveType,
-    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions,
-    MTLStoreAction, MTLPixelFormat, MTLStorageMode, MTLTextureUsage, MTLTextureDescriptor,
-};
 use metal_cpp_rs::objc_abi::Ref;
 use metal_cpp_rs::prelude::*;
+use shared::{
+    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPixelFormat, MTLPrimitiveType,
+    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStorageMode,
+    MTLStoreAction, MTLTextureDescriptor, MTLTextureUsage,
+};
 
 const SHADER_SOURCE: &str = r#"
 #include <metal_stdlib>
@@ -32,16 +32,37 @@ fragment float4 fs(VertexOut i [[stage_in]], texture2d<float> tex [[texture(0)]]
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-struct Vertex { position: [f32; 2], uv: [f32; 2] }
+struct Vertex {
+    position: [f32; 2],
+    uv: [f32; 2],
+}
 
 // A quad (two triangles) with UV coordinates.
 const VERTICES: [Vertex; 6] = [
-    Vertex { position: [-0.5, -0.5], uv: [0.0, 0.0] },
-    Vertex { position: [ 0.5, -0.5], uv: [1.0, 0.0] },
-    Vertex { position: [ 0.5,  0.5], uv: [1.0, 1.0] },
-    Vertex { position: [-0.5, -0.5], uv: [0.0, 0.0] },
-    Vertex { position: [ 0.5,  0.5], uv: [1.0, 1.0] },
-    Vertex { position: [-0.5,  0.5], uv: [0.0, 1.0] },
+    Vertex {
+        position: [-0.5, -0.5],
+        uv: [0.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, -0.5],
+        uv: [1.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, 0.5],
+        uv: [1.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5],
+        uv: [0.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, 0.5],
+        uv: [1.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, 0.5],
+        uv: [0.0, 1.0],
+    },
 ];
 
 const TEX_W: u64 = 64;
@@ -59,10 +80,10 @@ fn main() {
         for x in 0..TEX_W {
             let checker = ((x / 8) + (y / 8)) % 2 == 0;
             let c: u8 = if checker { 255 } else { 64 };
-            pixels.push(c);     // B
-            pixels.push(c);     // G
-            pixels.push(c);     // R
-            pixels.push(255);   // A
+            pixels.push(c); // B
+            pixels.push(c); // G
+            pixels.push(c); // R
+            pixels.push(255); // A
         }
     }
 
@@ -81,7 +102,11 @@ fn main() {
     unsafe {
         let region = metal_cpp_rs::metal::types::MTLRegion {
             origin: metal_cpp_rs::metal::types::MTLOrigin { x: 0, y: 0, z: 0 },
-            size: metal_cpp_rs::metal::types::MTLSize { width: TEX_W, height: TEX_H, depth: 1 },
+            size: metal_cpp_rs::metal::types::MTLSize {
+                width: TEX_W,
+                height: TEX_H,
+                depth: 1,
+            },
         };
         texture.replaceRegion(
             region,
@@ -92,12 +117,15 @@ fn main() {
     }
 
     app.run(|frame: &Frame| unsafe {
-        let tex: Ref<MTLTexture> = msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
+        let tex: Ref<MTLTexture> =
+            msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
         let rp = MTLRenderPassDescriptor::renderPassDescriptor();
         let ca = rp.colorAttachments().objectAtIndexedSubscript(0);
         ca.as_attachment().setTexture(tex);
-        ca.as_attachment().setLoadAction(MTLLoadAction::LoadActionClear);
-        ca.as_attachment().setStoreAction(MTLStoreAction::StoreActionStore);
+        ca.as_attachment()
+            .setLoadAction(MTLLoadAction::LoadActionClear);
+        ca.as_attachment()
+            .setStoreAction(MTLStoreAction::StoreActionStore);
         ca.setClearColor(MTLClearColor::Make(0.05, 0.05, 0.08, 1.0));
         let cb = frame.queue.commandBuffer();
         let enc = cb.renderCommandEncoder(rp.as_ref());
@@ -106,22 +134,48 @@ fn main() {
         enc.setFragmentTexture(texture.as_ref(), 0);
         enc.drawPrimitives(MTLPrimitiveType::PrimitiveTypeTriangle, 0, 6);
         enc.endEncoding();
-        let _: () = msg_send!(cb, Sel::get("presentDrawable:\0").as_ptr().unwrap(), frame.drawable);
+        let _: () = msg_send!(
+            cb,
+            Sel::get("presentDrawable:\0").as_ptr().unwrap(),
+            frame.drawable
+        );
         cb.commit();
     });
 }
 
-unsafe fn build_pipeline(device: Ref<MTLDevice>, src: &str, vs: &str, fs: &str) -> Strong<MTLRenderPipelineState> {
-    let library = device.newLibrary(NSString::from_str(src).as_ref(), MTLCompileOptions::new().as_ref(), &mut Strong::<MTLError>::nil());
+unsafe fn build_pipeline(
+    device: Ref<MTLDevice>,
+    src: &str,
+    vs: &str,
+    fs: &str,
+) -> Strong<MTLRenderPipelineState> {
+    let library = device.newLibrary(
+        NSString::from_str(src).as_ref(),
+        MTLCompileOptions::new().as_ref(),
+        &mut Strong::<MTLError>::nil(),
+    );
     let desc = MTLRenderPipelineDescriptor::new();
-    desc.setVertexFunction(library.newFunction(NSString::from_str(vs).as_ref()).as_ref());
-    desc.setFragmentFunction(library.newFunction(NSString::from_str(fs).as_ref()).as_ref());
-    desc.colorAttachments().objectAtIndexedSubscript(0).setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
+    desc.setVertexFunction(
+        library
+            .newFunction(NSString::from_str(vs).as_ref())
+            .as_ref(),
+    );
+    desc.setFragmentFunction(
+        library
+            .newFunction(NSString::from_str(fs).as_ref())
+            .as_ref(),
+    );
+    desc.colorAttachments()
+        .objectAtIndexedSubscript(0)
+        .setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
     device.newRenderPipelineState(desc.as_ref(), &mut Strong::<MTLError>::nil())
 }
 
 unsafe fn upload<T: Copy>(device: Ref<MTLDevice>, data: &[T]) -> Strong<MTLBuffer> {
-    let buf = device.newBuffer((std::mem::size_of::<T>() * data.len()) as u64, MTLResourceOptions::ResourceStorageModeShared);
+    let buf = device.newBuffer(
+        (std::mem::size_of::<T>() * data.len()) as u64,
+        MTLResourceOptions::ResourceStorageModeShared,
+    );
     std::ptr::copy_nonoverlapping(data.as_ptr(), buf.contents() as *mut T, data.len());
     buf
 }

@@ -13,9 +13,9 @@
 //!
 //! Run with: `cargo run -p window`
 
-use shared::{App, Frame, MTLClearColor, MTLLoadAction, MTLRenderPassDescriptor, MTLStoreAction};
 use metal_cpp_rs::objc_abi::Ref;
 use metal_cpp_rs::prelude::*;
+use shared::{App, Frame, MTLClearColor, MTLLoadAction, MTLRenderPassDescriptor, MTLStoreAction};
 
 fn main() {
     let app = App::new("00 - Window", 800.0, 600.0);

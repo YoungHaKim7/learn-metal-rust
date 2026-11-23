@@ -1,6 +1,14 @@
+<p align="center">
+  <img alt="apple" width=30px src="https://user-images.githubusercontent.com/67513038/210920737-91c0c09a-e8b1-4343-92d5-17db686c2373.png" />
+  <img alt="rust" width=30px src="https://github.com/user-attachments/assets/3489669b-63c0-439e-b507-9b2bfb3fdd5e" />
+  <a href="https://www.rust-lang.org/" rel="nofollow noopener noreferrer">
+    <img src="https://img.shields.io/badge/Rust-1.100+-orange.svg" alt="Rust">
+  </a>
+</p>
+
 # Learn Metal with Rust (`metal-cpp-rs`)
 
-A Rust port of the [LearnMetalCPP](../LearnMetalCPP) samples — each sample
+A Rust port of the [LearnMetalCPP](https://github.com/YoungHaKim7/macOS_gui_apple_metal_rs/tree/main/002_Cpp_Metal_Tutorials/LearnMetalCPP) samples — each sample
 incrementally introduces one Metal concept, building on the previous one.
 
 These samples use [`metal-cpp-rs`](https://github.com/YoungHaKim7/metal-cpp-rs),
@@ -26,7 +34,7 @@ Objective-C runtime with zero third-party dependencies.
 ## Prerequisites
 
 - **macOS** (Metal only exists on Apple platforms)
-- **Rust** 1.71+ (`rustup.rs`)
+- **Rust** 1.100+ (`rustup.rs`)
 - **Xcode Command Line Tools** (`xcode-select --install`)
 
 ## Running
@@ -49,7 +57,7 @@ cargo run -p frame_debugging     # 10
 
 ## Architecture
 
-```
+```bash
 LearnMetalRust/
 ├── Cargo.toml              ← workspace root
 ├── README.md               ← this file

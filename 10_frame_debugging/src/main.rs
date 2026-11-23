@@ -14,13 +14,12 @@
 //! open frame_debugging.gputrace
 //! ```
 
-use shared::{
-    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPrimitiveType,
-    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
-    MTLPixelFormat,
-};
 use metal_cpp_rs::objc_abi::{Ref, Sel};
 use metal_cpp_rs::prelude::*;
+use shared::{
+    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPixelFormat, MTLPrimitiveType,
+    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
+};
 
 const SHADER_SOURCE: &str = r#"
 #include <metal_stdlib>
@@ -43,17 +42,31 @@ fragment float4 fs(VertexOut i [[stage_in]]) { return i.color; }
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-struct Vertex { position: [f32; 2], color: [f32; 4] }
+struct Vertex {
+    position: [f32; 2],
+    color: [f32; 4],
+}
 
 const VERTICES: [Vertex; 3] = [
-    Vertex { position: [-0.5, -0.5], color: [1.0, 0.2, 0.2, 1.0] },
-    Vertex { position: [ 0.5, -0.5], color: [0.2, 1.0, 0.2, 1.0] },
-    Vertex { position: [ 0.0,  0.5], color: [0.2, 0.2, 1.0, 1.0] },
+    Vertex {
+        position: [-0.5, -0.5],
+        color: [1.0, 0.2, 0.2, 1.0],
+    },
+    Vertex {
+        position: [0.5, -0.5],
+        color: [0.2, 1.0, 0.2, 1.0],
+    },
+    Vertex {
+        position: [0.0, 0.5],
+        color: [0.2, 0.2, 1.0, 1.0],
+    },
 ];
 
 #[repr(C)]
 #[derive(Copy, Clone, Default)]
-struct Args { rotation: f32 }
+struct Args {
+    rotation: f32,
+}
 
 fn main() {
     let app = App::new("10 - Frame Debugging", 800.0, 600.0);
@@ -72,15 +85,20 @@ fn main() {
     }
 
     app.run(|frame: &Frame| unsafe {
-        let args = Args { rotation: frame.time };
+        let args = Args {
+            rotation: frame.time,
+        };
         *(ub.contents() as *mut Args) = args;
 
-        let tex: Ref<MTLTexture> = msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
+        let tex: Ref<MTLTexture> =
+            msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
         let rp = MTLRenderPassDescriptor::renderPassDescriptor();
         let ca = rp.colorAttachments().objectAtIndexedSubscript(0);
         ca.as_attachment().setTexture(tex);
-        ca.as_attachment().setLoadAction(MTLLoadAction::LoadActionClear);
-        ca.as_attachment().setStoreAction(MTLStoreAction::StoreActionStore);
+        ca.as_attachment()
+            .setLoadAction(MTLLoadAction::LoadActionClear);
+        ca.as_attachment()
+            .setStoreAction(MTLStoreAction::StoreActionStore);
         ca.setClearColor(MTLClearColor::Make(0.05, 0.05, 0.08, 1.0));
 
         let cb = frame.queue.commandBuffer();
@@ -91,7 +109,11 @@ fn main() {
         enc.drawPrimitives(MTLPrimitiveType::PrimitiveTypeTriangle, 0, 3);
         enc.endEncoding();
 
-        let _: () = msg_send!(cb, Sel::get("presentDrawable:\0").as_ptr().unwrap(), frame.drawable);
+        let _: () = msg_send!(
+            cb,
+            Sel::get("presentDrawable:\0").as_ptr().unwrap(),
+            frame.drawable
+        );
         cb.commit();
         cb.waitUntilCompleted();
 
@@ -110,7 +132,10 @@ fn main() {
 /// `MTLCaptureDescriptor` with `MTLCaptureDestination::CaptureDestinationGPUTraceDocument`.
 unsafe fn start_capture(device: Ref<MTLDevice>, path: *const std::ffi::c_char) -> bool {
     let mgr_sel = Sel::get("sharedCaptureManager\0").as_ptr().unwrap();
-    let mgr: Ref<Obj> = msg_send!(metal_cpp_rs::objc_abi::Obj::get("MTLCaptureManager\0".as_ptr()).unwrap(), mgr_sel);
+    let mgr: Ref<Obj> = msg_send!(
+        metal_cpp_rs::objc_abi::Obj::get("MTLCaptureManager\0".as_ptr()).unwrap(),
+        mgr_sel
+    );
 
     // Create an NSURL from the path string.
     let path_str = NSString::from_str(std::ffi::CStr::from_ptr(path).to_str().unwrap());
@@ -126,7 +151,11 @@ unsafe fn start_capture(device: Ref<MTLDevice>, path: *const std::ffi::c_char) -
     let desc: Ref<Obj> = msg_send!(desc, Sel::get("init\0").as_ptr().unwrap());
 
     // Set capture object (the device).
-    let _: () = msg_send!(desc, Sel::get("setCaptureObject:\0").as_ptr().unwrap(), device);
+    let _: () = msg_send!(
+        desc,
+        Sel::get("setCaptureObject:\0").as_ptr().unwrap(),
+        device
+    );
     // Set destination to GPU trace document (file).
     // MTLCaptureDestinationGPUTraceDocument = 1
     let _: () = msg_send!(desc, Sel::get("setDestination:\0").as_ptr().unwrap(), 1u64);
@@ -137,12 +166,21 @@ unsafe fn start_capture(device: Ref<MTLDevice>, path: *const std::ffi::c_char) -
     let mut error = Strong::<MTLError>::nil();
     let ok: bool = msg_send!(
         mgr,
-        Sel::get("startCaptureWithDescriptor:error:\0").as_ptr().unwrap(),
+        Sel::get("startCaptureWithDescriptor:error:\0")
+            .as_ptr()
+            .unwrap(),
         desc,
         &mut error
     );
     if !ok {
-        eprintln!("Capture start failed: {}", if error.is_nil() { "(unknown)".to_string() } else { error.localizedDescription().to_string() });
+        eprintln!(
+            "Capture start failed: {}",
+            if error.is_nil() {
+                "(unknown)".to_string()
+            } else {
+                error.localizedDescription().to_string()
+            }
+        );
         false
     } else {
         true
@@ -152,21 +190,46 @@ unsafe fn start_capture(device: Ref<MTLDevice>, path: *const std::ffi::c_char) -
 /// Stop the active GPU capture.
 unsafe fn stop_capture() {
     let mgr_sel = Sel::get("sharedCaptureManager\0").as_ptr().unwrap();
-    let mgr: Ref<Obj> = msg_send!(metal_cpp_rs::objc_abi::Obj::get("MTLCaptureManager\0".as_ptr()).unwrap(), mgr_sel);
+    let mgr: Ref<Obj> = msg_send!(
+        metal_cpp_rs::objc_abi::Obj::get("MTLCaptureManager\0".as_ptr()).unwrap(),
+        mgr_sel
+    );
     let _: () = msg_send!(mgr, Sel::get("stopCapture\0").as_ptr().unwrap());
 }
 
-unsafe fn build_pipeline(device: Ref<MTLDevice>, src: &str, vs: &str, fs: &str) -> Strong<MTLRenderPipelineState> {
-    let library = device.newLibrary(NSString::from_str(src).as_ref(), MTLCompileOptions::new().as_ref(), &mut Strong::<MTLError>::nil());
+unsafe fn build_pipeline(
+    device: Ref<MTLDevice>,
+    src: &str,
+    vs: &str,
+    fs: &str,
+) -> Strong<MTLRenderPipelineState> {
+    let library = device.newLibrary(
+        NSString::from_str(src).as_ref(),
+        MTLCompileOptions::new().as_ref(),
+        &mut Strong::<MTLError>::nil(),
+    );
     let desc = MTLRenderPipelineDescriptor::new();
-    desc.setVertexFunction(library.newFunction(NSString::from_str(vs).as_ref()).as_ref());
-    desc.setFragmentFunction(library.newFunction(NSString::from_str(fs).as_ref()).as_ref());
-    desc.colorAttachments().objectAtIndexedSubscript(0).setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
+    desc.setVertexFunction(
+        library
+            .newFunction(NSString::from_str(vs).as_ref())
+            .as_ref(),
+    );
+    desc.setFragmentFunction(
+        library
+            .newFunction(NSString::from_str(fs).as_ref())
+            .as_ref(),
+    );
+    desc.colorAttachments()
+        .objectAtIndexedSubscript(0)
+        .setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
     device.newRenderPipelineState(desc.as_ref(), &mut Strong::<MTLError>::nil())
 }
 
 unsafe fn upload<T: Copy>(device: Ref<MTLDevice>, data: &[T]) -> Strong<MTLBuffer> {
-    let buf = device.newBuffer((std::mem::size_of::<T>() * data.len()) as u64, MTLResourceOptions::ResourceStorageModeShared);
+    let buf = device.newBuffer(
+        (std::mem::size_of::<T>() * data.len()) as u64,
+        MTLResourceOptions::ResourceStorageModeShared,
+    );
     std::ptr::copy_nonoverlapping(data.as_ptr(), buf.contents() as *mut T, data.len());
     buf
 }

@@ -37,7 +37,7 @@
 #![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
 #![allow(clippy::missing_safety_doc, clippy::new_without_default)]
 
-use metal_cpp_rs::objc_abi::{autoreleasepool, NSUInteger, Obj, Raw, Ref, Sel, Strong};
+use metal_cpp_rs::objc_abi::{NSUInteger, Obj, Raw, Ref, Sel, Strong, autoreleasepool};
 use metal_cpp_rs::prelude::*;
 use metal_cpp_rs::quartz_core::{CAMetalLayer, CGSize};
 use std::time::Instant;
@@ -64,8 +64,10 @@ const WINDOW_STYLE_TITLED: u64 = 1;
 const WINDOW_STYLE_CLOSABLE: u64 = 2;
 const WINDOW_STYLE_MINIATURIZABLE: u64 = 4;
 const WINDOW_STYLE_RESIZABLE: u64 = 8;
-const WINDOW_STYLE_DEFAULT: u64 =
-    WINDOW_STYLE_TITLED | WINDOW_STYLE_CLOSABLE | WINDOW_STYLE_MINIATURIZABLE | WINDOW_STYLE_RESIZABLE;
+const WINDOW_STYLE_DEFAULT: u64 = WINDOW_STYLE_TITLED
+    | WINDOW_STYLE_CLOSABLE
+    | WINDOW_STYLE_MINIATURIZABLE
+    | WINDOW_STYLE_RESIZABLE;
 
 /// NSBackingStoreBuffered
 const WINDOW_BACKING_BUFFERED: u64 = 2;
@@ -248,7 +250,9 @@ pub struct NSPoint {
 }
 
 impl NSPoint {
-    pub fn new(x: f64, y: f64) -> Self { NSPoint { x, y } }
+    pub fn new(x: f64, y: f64) -> Self {
+        NSPoint { x, y }
+    }
 }
 
 /// Per-frame context handed to the render closure.
@@ -356,7 +360,9 @@ impl App {
     }
 
     /// The Metal device backing this app.
-    pub fn device(&self) -> &Strong<MTLDevice> { &self.device }
+    pub fn device(&self) -> &Strong<MTLDevice> {
+        &self.device
+    }
 
     /// Run the event loop until ESC or the close button ends it. Calls `f`
     /// once per frame with a fresh [`Frame`].

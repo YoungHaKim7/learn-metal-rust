@@ -14,13 +14,12 @@
 //!
 //! Run with: `cargo run -p primitive`
 
-use shared::{
-    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPrimitiveType,
-    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
-    MTLPixelFormat,
-};
 use metal_cpp_rs::objc_abi::Ref;
 use metal_cpp_rs::prelude::*;
+use shared::{
+    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPixelFormat, MTLPrimitiveType,
+    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
+};
 
 /// Metal Shading Language source for the triangle.
 ///
@@ -65,9 +64,18 @@ struct Vertex {
 }
 
 const VERTICES: [Vertex; 3] = [
-    Vertex { position: [-0.5, -0.5], color: [1.0, 0.2, 0.2, 1.0] }, // bottom-left, red
-    Vertex { position: [ 0.5, -0.5], color: [0.2, 1.0, 0.2, 1.0] }, // bottom-right, green
-    Vertex { position: [ 0.0,  0.5], color: [0.2, 0.2, 1.0, 1.0] }, // top-center, blue
+    Vertex {
+        position: [-0.5, -0.5],
+        color: [1.0, 0.2, 0.2, 1.0],
+    }, // bottom-left, red
+    Vertex {
+        position: [0.5, -0.5],
+        color: [0.2, 1.0, 0.2, 1.0],
+    }, // bottom-right, green
+    Vertex {
+        position: [0.0, 0.5],
+        color: [0.2, 0.2, 1.0, 1.0],
+    }, // top-center, blue
 ];
 
 fn main() {
@@ -75,7 +83,14 @@ fn main() {
     let device = app.device().as_ref();
 
     // 1. Compile the shader source at runtime.
-    let pipeline = unsafe { build_pipeline(device, SHADER_SOURCE, "triangle_vertex", "triangle_fragment") };
+    let pipeline = unsafe {
+        build_pipeline(
+            device,
+            SHADER_SOURCE,
+            "triangle_vertex",
+            "triangle_fragment",
+        )
+    };
 
     // 2. Upload the vertex data to a GPU buffer.
     let vertex_buffer = unsafe {
@@ -89,8 +104,8 @@ fn main() {
         std::ptr::copy_nonoverlapping(VERTICES.as_ptr(), dst, VERTICES.len());
     }
 
-    app.run(|frame: &Frame| {
-        unsafe { render_frame(frame, pipeline.as_ref(), vertex_buffer.as_ref()) }
+    app.run(|frame: &Frame| unsafe {
+        render_frame(frame, pipeline.as_ref(), vertex_buffer.as_ref())
     });
 }
 

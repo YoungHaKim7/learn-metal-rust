@@ -6,9 +6,9 @@
 //!
 //! Run with: `cargo run -p compute`
 
-use shared::{App, MTLCompileOptions, MTLComputePipelineDescriptor, MTLResourceOptions};
 use metal_cpp_rs::objc_abi::Ref;
 use metal_cpp_rs::prelude::*;
+use shared::{App, MTLCompileOptions, MTLComputePipelineDescriptor, MTLResourceOptions};
 
 const SHADER_SOURCE: &str = r#"
 #include <metal_stdlib>
@@ -29,26 +29,29 @@ fn main() {
     // Compile the compute shader.
     let src = NSString::from_str(SHADER_SOURCE);
     let mut err = Strong::<MTLError>::nil();
-    let library = unsafe { device.newLibrary(src.as_ref(), MTLCompileOptions::new().as_ref(), &mut err) };
-    if library.is_nil() { panic!("shader compile failed"); }
+    let library =
+        unsafe { device.newLibrary(src.as_ref(), MTLCompileOptions::new().as_ref(), &mut err) };
+    if library.is_nil() {
+        panic!("shader compile failed");
+    }
 
     let kernel_fn = unsafe { library.newFunction(NSString::from_str("fill").as_ref()) };
-    if kernel_fn.is_nil() { panic!("function lookup failed"); }
+    if kernel_fn.is_nil() {
+        panic!("function lookup failed");
+    }
 
     // Build a compute pipeline.
     let mut err2 = Strong::<MTLError>::nil();
-    let pipeline = unsafe {
-        device.newComputePipelineState(kernel_fn.as_ref(), &mut err2)
-    };
-    if pipeline.is_nil() { panic!("compute pipeline creation failed"); }
+    let pipeline = unsafe { device.newComputePipelineState(kernel_fn.as_ref(), &mut err2) };
+    if pipeline.is_nil() {
+        panic!("compute pipeline creation failed");
+    }
 
     // Allocate the output buffer + a small uniform buffer for `scale`.
-    let out_buffer = unsafe {
-        device.newBuffer(COUNT * 4, MTLResourceOptions::ResourceStorageModeShared)
-    };
-    let scale_buffer = unsafe {
-        device.newBuffer(4, MTLResourceOptions::ResourceStorageModeShared)
-    };
+    let out_buffer =
+        unsafe { device.newBuffer(COUNT * 4, MTLResourceOptions::ResourceStorageModeShared) };
+    let scale_buffer =
+        unsafe { device.newBuffer(4, MTLResourceOptions::ResourceStorageModeShared) };
 
     // Run one compute dispatch when the app starts, print results, then
     // keep the window open (clearing to black) so the user can see it ran.
@@ -66,8 +69,16 @@ fn main() {
             enc.setBuffer(out_buffer.as_ref(), 0, 0);
             enc.setBuffer(scale_buffer.as_ref(), 0, 1);
             // Dispatch COUNT threads in a 1D grid.
-            let tg = metal_cpp_rs::metal::types::MTLSize { width: COUNT, height: 1, depth: 1 };
-            let tp = metal_cpp_rs::metal::types::MTLSize { width: pipeline.maxTotalThreadsPerThreadgroup(), height: 1, depth: 1 };
+            let tg = metal_cpp_rs::metal::types::MTLSize {
+                width: COUNT,
+                height: 1,
+                depth: 1,
+            };
+            let tp = metal_cpp_rs::metal::types::MTLSize {
+                width: pipeline.maxTotalThreadsPerThreadgroup(),
+                height: 1,
+                depth: 1,
+            };
             enc.dispatchThreads(tg, tp);
             enc.endEncoding();
             cb.commit();
@@ -78,22 +89,29 @@ fn main() {
             let vals: Vec<f32> = (0..COUNT as usize).map(|i| *ptr.add(i)).collect();
             println!("Compute kernel produced {} values.", vals.len());
             println!("First 8: {:?}", &vals[..8]);
-            println!("Last 8:  {:?}", &vals[vals.len()-8..]);
+            println!("Last 8:  {:?}", &vals[vals.len() - 8..]);
             computed = true;
         }
 
         // Just clear the window to black so it stays visible.
-        let tex: Ref<MTLTexture> = msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
+        let tex: Ref<MTLTexture> =
+            msg_send!(frame.drawable, Sel::get("texture\0").as_ptr().unwrap());
         let rp = MTLRenderPassDescriptor::renderPassDescriptor();
         let ca = rp.colorAttachments().objectAtIndexedSubscript(0);
         ca.as_attachment().setTexture(tex);
-        ca.as_attachment().setLoadAction(MTLLoadAction::LoadActionClear);
-        ca.as_attachment().setStoreAction(MTLStoreAction::StoreActionStore);
+        ca.as_attachment()
+            .setLoadAction(MTLLoadAction::LoadActionClear);
+        ca.as_attachment()
+            .setStoreAction(MTLStoreAction::StoreActionStore);
         ca.setClearColor(MTLClearColor::Make(0.02, 0.02, 0.04, 1.0));
         let cb = frame.queue.commandBuffer();
         let enc = cb.renderCommandEncoder(rp.as_ref());
         enc.endEncoding();
-        let _: () = msg_send!(cb, Sel::get("presentDrawable:\0").as_ptr().unwrap(), frame.drawable);
+        let _: () = msg_send!(
+            cb,
+            Sel::get("presentDrawable:\0").as_ptr().unwrap(),
+            frame.drawable
+        );
         cb.commit();
     });
 }

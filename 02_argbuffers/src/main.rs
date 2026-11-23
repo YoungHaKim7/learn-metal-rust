@@ -11,13 +11,12 @@
 //!
 //! Run with: `cargo run -p argbuffers`
 
-use shared::{
-    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPrimitiveType,
-    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
-    MTLPixelFormat,
-};
 use metal_cpp_rs::objc_abi::Ref;
 use metal_cpp_rs::prelude::*;
+use shared::{
+    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPixelFormat, MTLPrimitiveType,
+    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
+};
 
 const SHADER_SOURCE: &str = r#"
 #include <metal_stdlib>
@@ -66,9 +65,18 @@ struct Vertex {
 }
 
 const VERTICES: [Vertex; 3] = [
-    Vertex { position: [-0.5, -0.5], color: [1.0, 0.2, 0.2, 1.0] },
-    Vertex { position: [ 0.5, -0.5], color: [0.2, 1.0, 0.2, 1.0] },
-    Vertex { position: [ 0.0,  0.5], color: [0.2, 0.2, 1.0, 1.0] },
+    Vertex {
+        position: [-0.5, -0.5],
+        color: [1.0, 0.2, 0.2, 1.0],
+    },
+    Vertex {
+        position: [0.5, -0.5],
+        color: [0.2, 1.0, 0.2, 1.0],
+    },
+    Vertex {
+        position: [0.0, 0.5],
+        color: [0.2, 0.2, 1.0, 1.0],
+    },
 ];
 
 /// Uniform data matching `struct Args` in the shader.
@@ -83,7 +91,12 @@ fn main() {
     let device = app.device().as_ref();
 
     let pipeline = unsafe {
-        build_pipeline(device, SHADER_SOURCE, "triangle_vertex", "triangle_fragment")
+        build_pipeline(
+            device,
+            SHADER_SOURCE,
+            "triangle_vertex",
+            "triangle_fragment",
+        )
     };
 
     // Upload vertex data.
@@ -116,7 +129,12 @@ fn main() {
             let dst = arg_buffer.contents() as *mut Args;
             *dst = args;
 
-            render_frame(frame, pipeline.as_ref(), vertex_buffer.as_ref(), arg_buffer.as_ref())
+            render_frame(
+                frame,
+                pipeline.as_ref(),
+                vertex_buffer.as_ref(),
+                arg_buffer.as_ref(),
+            )
         }
     });
 }

@@ -5,13 +5,12 @@
 //!
 //! Run with: `cargo run -p perspective`
 
-use shared::{
-    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPrimitiveType,
-    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
-    MTLPixelFormat,
-};
 use metal_cpp_rs::objc_abi::Ref;
 use metal_cpp_rs::prelude::*;
+use shared::{
+    App, Frame, MTLClearColor, MTLCompileOptions, MTLLoadAction, MTLPixelFormat, MTLPrimitiveType,
+    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLResourceOptions, MTLStoreAction,
+};
 
 const SHADER_SOURCE: &str = r#"
 #include <metal_stdlib>
@@ -32,12 +31,24 @@ fragment float4 fs(VertexOut i [[stage_in]]) { return i.color; }
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-struct Vertex { position: [f32; 3], color: [f32; 4] }
+struct Vertex {
+    position: [f32; 3],
+    color: [f32; 4],
+}
 
 const VERTICES: [Vertex; 3] = [
-    Vertex { position: [-0.5, -0.5, 0.0], color: [1.0, 0.2, 0.2, 1.0] },
-    Vertex { position: [ 0.5, -0.5, 0.0], color: [0.2, 1.0, 0.2, 1.0] },
-    Vertex { position: [ 0.0,  0.5, 0.0], color: [0.2, 0.2, 1.0, 1.0] },
+    Vertex {
+        position: [-0.5, -0.5, 0.0],
+        color: [1.0, 0.2, 0.2, 1.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, 0.0],
+        color: [0.2, 1.0, 0.2, 1.0],
+    },
+    Vertex {
+        position: [0.0, 0.5, 0.0],
+        color: [0.2, 0.2, 1.0, 1.0],
+    },
 ];
 
 /// 4×4 matrix (column-major, matching Metal's float4x4).
@@ -82,12 +93,15 @@ fn main() {
         let mvp = mat_mul(&proj, &model);
         *(ub.contents() as *mut Mat4) = mvp;
 
-        let tex: Ref<MTLTexture> = msg_send!(frame.drawable, Sel::get("texture\0".as_ptr()).unwrap());
+        let tex: Ref<MTLTexture> =
+            msg_send!(frame.drawable, Sel::get("texture\0".as_ptr()).unwrap());
         let rp = MTLRenderPassDescriptor::renderPassDescriptor();
         let ca = rp.colorAttachments().objectAtIndexedSubscript(0);
         ca.as_attachment().setTexture(tex);
-        ca.as_attachment().setLoadAction(MTLLoadAction::LoadActionClear);
-        ca.as_attachment().setStoreAction(MTLStoreAction::StoreActionStore);
+        ca.as_attachment()
+            .setLoadAction(MTLLoadAction::LoadActionClear);
+        ca.as_attachment()
+            .setStoreAction(MTLStoreAction::StoreActionStore);
         ca.setClearColor(MTLClearColor::Make(0.05, 0.05, 0.08, 1.0));
         let cb = frame.queue.commandBuffer();
         let enc = cb.renderCommandEncoder(rp.as_ref());
@@ -96,7 +110,11 @@ fn main() {
         enc.setVertexBuffer(ub.as_ref(), 0, 1);
         enc.drawPrimitives(MTLPrimitiveType::PrimitiveTypeTriangle, 0, 3);
         enc.endEncoding();
-        let _: () = msg_send!(cb, Sel::get("presentDrawable:\0".as_ptr()).unwrap(), frame.drawable);
+        let _: () = msg_send!(
+            cb,
+            Sel::get("presentDrawable:\0".as_ptr()).unwrap(),
+            frame.drawable
+        );
         cb.commit();
     });
 }
@@ -113,17 +131,39 @@ fn mat_mul(a: &Mat4, b: &Mat4) -> Mat4 {
     Mat4(r)
 }
 
-unsafe fn build_pipeline(device: Ref<MTLDevice>, src: &str, vs: &str, fs: &str) -> Strong<MTLRenderPipelineState> {
-    let library = device.newLibrary(NSString::from_str(src).as_ref(), MTLCompileOptions::new().as_ref(), &mut Strong::<MTLError>::nil());
+unsafe fn build_pipeline(
+    device: Ref<MTLDevice>,
+    src: &str,
+    vs: &str,
+    fs: &str,
+) -> Strong<MTLRenderPipelineState> {
+    let library = device.newLibrary(
+        NSString::from_str(src).as_ref(),
+        MTLCompileOptions::new().as_ref(),
+        &mut Strong::<MTLError>::nil(),
+    );
     let desc = MTLRenderPipelineDescriptor::new();
-    desc.setVertexFunction(library.newFunction(NSString::from_str(vs).as_ref()).as_ref());
-    desc.setFragmentFunction(library.newFunction(NSString::from_str(fs).as_ref()).as_ref());
-    desc.colorAttachments().objectAtIndexedSubscript(0).setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
+    desc.setVertexFunction(
+        library
+            .newFunction(NSString::from_str(vs).as_ref())
+            .as_ref(),
+    );
+    desc.setFragmentFunction(
+        library
+            .newFunction(NSString::from_str(fs).as_ref())
+            .as_ref(),
+    );
+    desc.colorAttachments()
+        .objectAtIndexedSubscript(0)
+        .setPixelFormat(MTLPixelFormat::PixelFormatBGRA8Unorm);
     device.newRenderPipelineState(desc.as_ref(), &mut Strong::<MTLError>::nil())
 }
 
 unsafe fn upload<T: Copy>(device: Ref<MTLDevice>, data: &[T]) -> Strong<MTLBuffer> {
-    let buf = device.newBuffer((std::mem::size_of::<T>() * data.len()) as u64, MTLResourceOptions::ResourceStorageModeShared);
+    let buf = device.newBuffer(
+        (std::mem::size_of::<T>() * data.len()) as u64,
+        MTLResourceOptions::ResourceStorageModeShared,
+    );
     std::ptr::copy_nonoverlapping(data.as_ptr(), buf.contents() as *mut T, data.len());
     buf
 }
