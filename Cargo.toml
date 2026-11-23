@@ -1,12 +1,12 @@
 [package]
 name = "learn-metal-rust"
 version = "0.1.0"
+description = "10 runnable Rust examples for the metal-rust crate (Apple Metal)."
 
 [workspace.package]
 edition = "2024"
 rust-version = "1.100.0"
 publish = false
-description = "10 runnable Rust examples for the metal-rust crate (Apple Metal)."
 
 [workspace]
 resolver = "3"

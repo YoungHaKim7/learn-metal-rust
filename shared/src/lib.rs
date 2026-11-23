@@ -37,10 +37,10 @@
 #![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
 #![allow(clippy::missing_safety_doc, clippy::new_without_default)]
 
-use metal_cpp_rs::objc_abi::{NSUInteger, Obj, Raw, Ref, Sel, Strong, autoreleasepool};
-use metal_cpp_rs::prelude::*;
-use metal_cpp_rs::quartz_core::{CAMetalLayer, CGSize};
 use std::time::Instant;
+
+use metal_cpp_rs::objc_abi::{NSUInteger, Obj, Raw, Ref, Sel, Strong, autoreleasepool};
+use metal_cpp_rs::quartz_core::{CAMetalLayer, CGSize};
 
 // ---------------------------------------------------------------------------
 // AppKit constants and selectors (the metal-cpp-rs crate wraps Metal and
