@@ -12,6 +12,7 @@ members = [
     "08_compute",
     "09_compute_to_render",
     "10_frame_debugging",
+    "999Small_Projects/metal_todo_app",
 ]
 
 # Each sample is a standalone binary crate that depends on `metal-cpp-rs`
